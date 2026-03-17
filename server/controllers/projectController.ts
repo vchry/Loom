@@ -50,7 +50,7 @@ export const makeRevision = async (req: Request, res: Response) => {
     });
 
     const promptEnhanceResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      model: "stepfun/step-3.5-flash:free",
       messages: [
         {
           role: "system",
@@ -93,7 +93,7 @@ Return ONLY the enhanced request, nothing else. Keep it concise (1-2 sentences).
     });
 
     const codeGenerationResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      model: "stepfun/step-3.5-flash:free",
       messages: [
         {
           role: "system",
@@ -120,6 +120,21 @@ Apply the requested changes while maintaining the Tailwind CSS styling approach.
 
     const code = codeGenerationResponse.choices[0].message.content || "";
 
+    if (!code) {
+      await prisma.conversation.create({
+        data: {
+          role: "assistant",
+          content: "Unable to generate the code, please try again",
+          projectId,
+        },
+      });
+      await prisma.user.update({
+        where: { id: userId },
+        data: { credits: { increment: 5 } },
+      });
+      return;
+    }
+
     const versions = await prisma.version.create({
       data: {
         code: code
@@ -134,8 +149,7 @@ Apply the requested changes while maintaining the Tailwind CSS styling approach.
     await prisma.conversation.create({
       data: {
         role: "assistant",
-        content:
-          "I've made changes to your website! You can now preview it",
+        content: "I've made changes to your website! You can now preview it",
         projectId,
       },
     });
@@ -329,89 +343,6 @@ export const saveProjectCode = async (req: Request, res: Response) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import { Request, Response } from "express";
 // import prisma from "../lib/prisma";
 // import openai from "../configs/openai";
@@ -510,7 +441,7 @@ export const saveProjectCode = async (req: Request, res: Response) => {
 //         {
 //           role: "system",
 //           content: `
-// You are an expert web developer. 
+// You are an expert web developer.
 
 //     CRITICAL REQUIREMENTS:
 //     - Return ONLY the complete updated HTML code with the requested changes.
@@ -724,7 +655,7 @@ export const saveProjectCode = async (req: Request, res: Response) => {
 //       where: { id: projectId },
 //       data: { current_code: code, current_version_index: "" },
 //     });
-    
+
 //     res.json({ message: "Project saved successfully" });
 
 //     res.json({ code: project.current_code });

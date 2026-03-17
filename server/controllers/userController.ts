@@ -14,7 +14,7 @@ export const getUserCredits = async (req: Request, res: Response) => {
       where: { id: userId },
     });
 
-    res.json({ credits: user?.credits });
+    res.json({ credits: user?.credits ?? 0 });
   } catch (error: any) {
     console.log(error.code || error.message);
     res.status(500).json({ message: error.message });
@@ -75,7 +75,7 @@ export const createUserProject = async (req: Request, res: Response) => {
     res.json({ projectId: project.id });
 
     const promptEnhanceResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      model: "stepfun/step-3.5-flash:free",
       messages: [
         {
           role: "system",
@@ -117,7 +117,7 @@ Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3
     });
 
     const codeGenerationResponse = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
+      model: "stepfun/step-3.5-flash:free",
       messages: [
         {
           role: "system",
@@ -156,6 +156,21 @@ The HTML should be complete and ready to render as-is with Tailwind CSS.
     });
 
     const code = codeGenerationResponse.choices[0].message.content || "";
+
+    if (!code) {
+      await prisma.conversation.create({
+        data: {
+          role: "assistant",
+          content: "Unable to generate the code, please try again",
+          projectId: project.id,
+        },
+      });
+      await prisma.user.update({
+        where: { id: userId },
+        data: { credits: { increment: 5 } },
+      });
+      return;
+    }
 
     const version = await prisma.version.create({
       data: {
@@ -284,53 +299,6 @@ export const togglePublish = async (req: Request, res: Response) => {
 
 //Controller funtion to purchase credits
 export const purchaseCredits = async (req: Request, res: Response) => {};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { Request, Response } from "express";
 // import prisma from "../lib/prisma";
@@ -461,7 +429,7 @@ export const purchaseCredits = async (req: Request, res: Response) => {};
 // You are an expert web developer. Create a complete, production-ready, single-page website based on this request: "${enhancedPrompt}"
 
 // CRITICAL REQUIREMENTS:
-// - You MUST output valid HTML ONLY. 
+// - You MUST output valid HTML ONLY.
 // - Use Tailwind CSS for ALL styling
 // - Include this EXACT script in the <head>: <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 // - Use Tailwind utility classes extensively for styling, animations, and responsiveness
@@ -621,10 +589,7 @@ export const purchaseCredits = async (req: Request, res: Response) => {};
 
 // //Controller funtion to purchase credits
 // export const purchaseCredits = async (req: Request, res: Response) => {
-  
+
 // };
-
-
-
 
 // do same for this please

@@ -2,27 +2,52 @@ import React, { useEffect, useState } from "react";
 import type { Project } from "../types";
 import { Loader, Loader2Icon, PlusIcon, TrashIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { dummyProjects } from "../assets/assets";
+// import { dummyProjects } from "../assets/assets";
 import Footer from "../components/footer";
+import { toast } from "sonner";
+import api from "@/configs/axios";
+import { authClient } from "@/lib/auth-client";
 
 const MyProjects = () => {
+  const { data: session, isPending } = authClient.useSession();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
   const fetchProjects = async () => {
-    setProjects(dummyProjects);
-    // simulate loading
-    setTimeout(() => {
+    try {
+      const { data } = await api.get("/api/user/projects");
+      setProjects(data.projects);
       setLoading(false);
-    }, 1000);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || error.message);
+    }
   };
 
-  const deleteProject = async (projectId: string) => {};
+  const deleteProject = async (projectId: string) => {
+    try {
+      const confirm = window.confirm(
+        "Are you sure you want to delete this project",
+      );
+      if (!confirm) return;
+      const { data } = await api.delete(`/api/project/${projectId}`);
+      toast.success(data.message);
+      fetchProjects();
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || error.message);
+    }
+  };
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (session?.user && !isPending) {
+      fetchProjects();
+    } else if (!isPending && !session?.user) {
+      navigate("/");
+      toast("Please login to view your projects");
+    }
+  }, [session?.user]);
 
   return (
     <>
@@ -36,7 +61,6 @@ const MyProjects = () => {
         ) : projects.length > 0 ? (
           /* Projects section when user has projects */
           <div className="py-10 min-h-[80vh]">
-            
             {/* Header section containing title and create project button */}
             <div className="flex items-center justify-between mb-12">
               <h1 className="text-2xl font-medium text-white">My Projects</h1>
@@ -53,14 +77,12 @@ const MyProjects = () => {
             {/* Container holding all project cards */}
             <div className="flex flex-wrap gap-3.5">
               {projects.map((project) => (
-                
                 /* Single project card container */
                 <div
                   onClick={() => navigate(`/projects/${project.id}`)}
                   key={project.id}
                   className="relative group w-72 max-sm:mx-auto cursor-pointer bg-gray-900/60 border border-gray-700 rounded-lg overflow-hidden shadow-md group hover:shadow-indigo-700/30 hover:border-indigo-800/80 transition-all duration-300"
                 >
-                  
                   {/* Project preview section displaying mini website iframe */}
                   <div className="relative w-full h-40 bg-gray-900 overflow-hidden border-b border-gray-800">
                     {project.current_code ? (
@@ -80,7 +102,6 @@ const MyProjects = () => {
 
                   {/* Project information section */}
                   <div className="p-4 text-white bg-linear-180 from-transparent group-hover:from-indigo-950 to-transparent transition-colors">
-                    
                     {/* Project title and type badge */}
                     <div className="flex items-start justify-between">
                       <h2 className="text-lg font-medium line-clamp-2">
@@ -103,7 +124,6 @@ const MyProjects = () => {
                       onClick={(e) => e.stopPropagation()}
                       className="flex justify-between items-center mt-6"
                     >
-                      
                       {/* Project creation date */}
                       <span className="text-xs text-gray-500">
                         {new Date(project.createdAt).toLocaleDateString()}
@@ -111,7 +131,6 @@ const MyProjects = () => {
 
                       {/* Action buttons container */}
                       <div className="flex gap-3 text-white text-sm">
-                        
                         {/* Preview project button */}
                         <button
                           onClick={() => {
@@ -164,7 +183,7 @@ const MyProjects = () => {
         )}
       </div>
 
-      <Footer/>
+      <Footer />
     </>
   );
 };
