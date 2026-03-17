@@ -1,10 +1,15 @@
 import React, { memo } from "react";
 import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
+import { authClient } from "@/lib/auth-client";
+import { UserButton } from "@daveyplate/better-auth-ui";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const navigate = useNavigate;
+  const navigate = useNavigate();
+
+  const { data: session } = authClient.useSession();
+
   return (
     <>
       <nav className="z-50 flex items-center justify-between w-full py-4 px-4 md:px-16 lg:px-24 xl:px-32 backdrop-blur border-b text-white border-slate-800">
@@ -20,12 +25,17 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/auth/signin")}
-            className="px-6 py-1.5 max-sm:text-sm bg-indigo-600 active:scale-95 hover:bg-indigo-700 transition rounded"
-          >
-            Get started
-          </button>
+          {!session?.user ? (
+            <button
+              onClick={() => navigate("/auth/signin")}
+              className="px-6 py-1.5 max-sm:text-sm bg-indigo-600 active:scale-95 hover:bg-indigo-700 transition rounded"
+            >
+              Get started
+            </button>
+          ) : (
+            <UserButton size="icon" />
+          )}
+
           <button
             id="open-menu"
             className="md:hidden active:scale-90 transition"
@@ -53,10 +63,18 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="fixed inset-0 z-[100] bg-black/60 text-white backdrop-blur flex flex-col items-center justify-center text-lg gap-8 md:hidden transition-transform duration-300">
-          <Link to="/" onClick={()=> setMenuOpen(false)}>Home</Link>
-          <Link to="/projects" onClick={()=> setMenuOpen(false)}>My Projects</Link>
-          <Link to="/community" onClick={()=> setMenuOpen(false)}>Community</Link>
-          <Link to="/pricing" onClick={()=> setMenuOpen(false)}>Pricing</Link>
+          <Link to="/" onClick={() => setMenuOpen(false)}>
+            Home
+          </Link>
+          <Link to="/projects" onClick={() => setMenuOpen(false)}>
+            My Projects
+          </Link>
+          <Link to="/community" onClick={() => setMenuOpen(false)}>
+            Community
+          </Link>
+          <Link to="/pricing" onClick={() => setMenuOpen(false)}>
+            Pricing
+          </Link>
 
           <button
             className="active:ring-3 active:ring-white aspect-square size-10 p-1 items-center justify-center bg-slate-100 hover:bg-slate-200 transition text-black rounded-md flex"
