@@ -10,7 +10,7 @@ import View from "./pages/View";
 import Navbar from "./components/Navbar";
 import { Toaster } from "sonner";
 import AuthPage from "./pages/auth/AuthPage";
-import Settings from "./pages/setting";
+import Settings from "./pages/Setting";
 
 const App = () => {
   const { pathname } = useLocation();
