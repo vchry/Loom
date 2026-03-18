@@ -11,7 +11,7 @@ export const appPlans = [
             price: '₹99',
             credits: 100,
             description: 'Start Now, scale up as you grow.',
-            features: ['Upto 20 Creations', 'Limited Revisions', 'Basic AI Models', 'email support', 'Basic analytics',],
+            features: ['Upto 100 Creations', 'Limited Revisions', 'Basic AI Models', 'email support', 'Basic analytics',],
         },
         {
             id: 'pro',
@@ -19,7 +19,7 @@ export const appPlans = [
             price: '₹399',
             credits: 500,
             description: 'Add credits to create more projects',
-            features: ['Upto 80 Creations', 'Extended Revisions', 'Advanced AI Models', 'priority email support', 'Advanced analytics',],
+            features: ['Upto 500 Creations', 'Extended Revisions', 'Advanced AI Models', 'priority email support', 'Advanced analytics',],
         },
         {
             id: 'enterprise',
@@ -27,7 +27,7 @@ export const appPlans = [
             price: '₹999',
             credits: 1500,
             description: 'Add credits to create more projects',
-            features: ['Upto 200 Creations', 'Increased Revisions', 'Advanced AI Models', 'email + chat support', 'Advanced analytics',],
+            features: ['Upto 1500 Creations', 'Increased Revisions', 'Advanced AI Models', 'email + chat support', 'Advanced analytics',],
         }
     ]
 
